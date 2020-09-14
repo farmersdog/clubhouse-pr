@@ -4,9 +4,9 @@ Insert description here, Rae.
 
 ## Inputs
 
-### `ch-id`
+### `ghToken`
 
-**Required** The Clubhouse story ID (ie. '[ch0]')
+**Required** GITHUB_TOKEN
 
 ## Outputs
 
@@ -16,6 +16,16 @@ The title of the pull request
 
 ## Example usage
 
+Note: This is for use when *opening* or *synchronizing* a pull request.
+
+```
+on:
+  pull_request:
+    types: [opened, synchronize]
+```
+
+```
 uses: actions/clubhouse-pr@v1
 with:
-  pr-title: '[ch0]'
+  ghToken: ${{ secrets.GITHUB_TOKEN }}
+```

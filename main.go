@@ -1,14 +1,31 @@
 package main
 
-import "github.com/sethvargo/go-githubactions"
+import (
+  "context"
+  "os"
+  "github.com/sethvargo/go-githubactions"
+  "golang.org/x/oauth2"
+  "github.com/shurcooL/githubv4"
+)
 
 func main() {
-  chId := githubactions.GetInput("ch-id")
+  ghToken := githubactions.GetInput("ghToken")
 
-  if chId == "" {
-    githubactions.Fatalf("missing input 'ch-id'")
+  githubactions.Debugf("ghToken is...%d", ghToken)
+
+  if ghToken == "" {
+    githubactions.Fatalf("missing input 'ghToken'")
   }
 
-  // TODO: will want to use this for some inputs:
-  // githubactions.AddMask(fruit)
+  githubactions.AddMask(ghToken)
+
+  // Github Auth
+  src := oauth2.StaticTokenSource(
+    &oauth2.Token{AccessToken: os.Getenv("ghToken")},
+  )
+
+  httpClient := oauth2.NewClient(context.Background(), src)
+
+  client := githubv4.NewClient(httpClient)
+
 }
