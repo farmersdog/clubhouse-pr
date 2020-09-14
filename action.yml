@@ -2,12 +2,12 @@ name: 'Clubhouse Pull Request'
 description: 'Populate PR fields with Clubhouse story information'
 inputs:
   ch-id:
-    description: 'Clubhouse ID (ie. [ch100])'
+    description: 'Clubhouse ID (ie. [ch0])'
     required: true
     default: '[ch0]'
 outputs:
-  complete-pr-title:
-    description: 'Complete Pull Request Title from Clubhouse'
+  pr-title:
+    description: 'Pull Request Title from Clubhouse'
 runs:
   using: 'docker'
   image: 'Dockerfile'

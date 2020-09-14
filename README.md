@@ -4,18 +4,18 @@ Insert description here, Rae.
 
 ## Inputs
 
-### `who-to-greet`
+### `ch-id`
 
-**Required** The name of the person to greet. Default `"World"`.
+**Required** The Clubhouse story ID (ie. '[ch0]')
 
 ## Outputs
 
-### `time`
+### `pr-title`
 
-The time we greeted you.
+The title of the pull request
 
 ## Example usage
 
 uses: actions/clubhouse-pr@v1
 with:
-  who-to-greet: 'Mona the Octocat'
+  pr-title: '[ch0]'
