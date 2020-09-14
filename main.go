@@ -3,9 +3,9 @@ package main
 import "github.com/sethvargo/go-githubactions"
 
 func main() {
-  fruit := githubactions.GetInput("ch-id")
+  chId := githubactions.GetInput("ch-id")
 
-  if ch-id == "" {
+  if chId == "" {
     githubactions.Fatalf("missing input 'ch-id'")
   }
 
