@@ -1,7 +1,6 @@
 package main
 
 import (
-  "os"
   "fmt"
   "context"
   "github.com/sethvargo/go-githubactions"
@@ -21,7 +20,7 @@ func main() {
   fmt.Println("Authorizing Github API access...")
 
   src := oauth2.StaticTokenSource(
-    &oauth2.Token{AccessToken: os.Getenv("INPUT_GHTOKEN")},
+    &oauth2.Token{AccessToken: ghToken},
   )
 
   httpClient := oauth2.NewClient(context.Background(), src)
