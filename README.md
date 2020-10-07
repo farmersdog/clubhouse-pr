@@ -21,9 +21,15 @@ Automatically update your Github Pull Request with a Clubhouse title in the form
 
 The title of the pull request
 
+## Development
+
+Run `yarn tdd` to watch Jest tests as you make your changes.
+
+Run `yarn lint:watch` to watch for ESLint errors/warnings.
+
 ## Example usage
 
-Note: This is for use when _opening_ a pull request.
+Note: This is for use when _opening_/synchronizing a pull request.
 
 ```
 on:
