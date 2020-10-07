@@ -63,7 +63,7 @@ describe('Update Pull Request', () => {
       expect(action.getStoryIds()).toEqual(['2']);
     });
 
-    test('should return storyIds from PR title', () => {
+    test('should exit if no ch id in PR title or branchName', () => {
       github.context = {
         payload: {
           pull_request: {
