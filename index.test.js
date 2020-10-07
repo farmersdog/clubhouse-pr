@@ -4,6 +4,8 @@ import * as action from '.';
 
 let inputs = {};
 
+jest.mock('@actions/core');
+
 jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(),
 }));
