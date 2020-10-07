@@ -111,10 +111,12 @@ export async function run() {
     const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
     const storyNameAndId = `${story.name} ${formattedStoryIds}`;
 
-    return await updatePullRequest({
+    await updatePullRequest({
       title: storyNameAndId,
       url: story.app_url,
     });
+
+    return core.setOutput('prTitle', storyNameAndId);
   } catch (error) {
     return core.setFailed(error.message);
   }
