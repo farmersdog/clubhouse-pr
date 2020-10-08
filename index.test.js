@@ -50,11 +50,24 @@ describe('Update Pull Request', () => {
       expect(action.getStoryIds()).toEqual(['1']);
     });
 
-    test('should return storyIds from PR title', () => {
+    test('should return [ch#] storyIds from PR title', () => {
       github.context = {
         payload: {
           pull_request: {
             title: '[ch2]',
+            head: { ref: 'i-named-this-in-a-diff-format' },
+          },
+        },
+      };
+
+      expect(action.getStoryIds()).toEqual(['2']);
+    });
+
+    test('should return ch# storyIds from PR title', () => {
+      github.context = {
+        payload: {
+          pull_request: {
+            title: 'ch2',
             head: { ref: 'i-named-this-in-a-diff-format' },
           },
         },

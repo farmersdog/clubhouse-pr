@@ -19,11 +19,11 @@ export function getStoryIds() {
     payload: { pull_request: pullRequest },
   } = github.context;
   const branchName = pullRequest.head.ref;
-  const branchStoryIds = branchName.match(/(ch)(\d+)/g);
+  // Only when a Github user formats their branchName as: text/ch123/something
+  const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
   const prTitle = pullRequest.title;
   // Github user can enter CH story ID in either format: '[ch123]' or 'ch123':
-  const prTitleStoryIds =
-    prTitle.match(/\[(ch)(\d+)\]/g) || prTitle.match(/(ch)(\d+)/g);
+  const prTitleStoryIds = prTitle.match(/(?<=ch)\d+/g);
   // Github user can include more than one CH story ID
   let storyIds = '';
 
@@ -39,7 +39,7 @@ export function getStoryIds() {
   }
 
   if (prTitleStoryIds) {
-    storyIds = formatMatches(prTitleStoryIds);
+    storyIds = prTitleStoryIds;
 
     core.info(`Found Clubhouse ID(s) in PR Title: ${storyIds.join(', ')}`);
 
@@ -73,7 +73,7 @@ export async function updatePullRequest(metadata) {
   } = github.context;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
-  const body = `${url} \n \n ${originalBody}`;
+  const body = `${url} \n \n${originalBody}`;
 
   try {
     octokit.pulls.update({

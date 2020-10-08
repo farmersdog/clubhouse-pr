@@ -3,7 +3,8 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 ![Test](https://github.com/farmersdog/clubhouse-pr/workflows/Test/badge.svg)
 
-Automatically update your Github Pull Request with a Clubhouse title in the format: `(feat) Some Feature [ch123]`.
+Automatically update your Github Pull Request with a Clubhouse title in the format: `(feat) Some Feature [ch123]`. And
+adds the Clubhouse story's URL to the beginning of the body of your PR.
 
 ## Inputs
 
