@@ -30,12 +30,12 @@ Run `yarn lint:watch` to watch for ESLint errors/warnings.
 
 ## Example usage
 
-Note: This is for use when _opening_/synchronizing a pull request.
+Note: This is for use when _opening_ a pull request.
 
 ```
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 ```
 
 ```
