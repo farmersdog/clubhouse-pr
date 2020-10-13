@@ -28,6 +28,8 @@ Run `yarn tdd` to watch Jest tests as you make your changes.
 
 Run `yarn lint:watch` to watch for ESLint errors/warnings.
 
+**Note**: Always run `yarn build` before pushing any changes.
+
 ## Example usage
 
 Note: This is for use when _opening_ a pull request.
