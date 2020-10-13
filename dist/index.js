@@ -14,15 +14,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "updatePullRequest": () => /* binding */ updatePullRequest,
 /* harmony export */   "run": () => /* binding */ run
 /* harmony export */ });
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var clubhouse_lib__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6986);
-/* harmony import */ var clubhouse_lib__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(clubhouse_lib__WEBPACK_IMPORTED_MODULE_2__);
-
-
-
+const core = __webpack_require__(2186);
+const github = __webpack_require__(5438);
+const Clubhouse = __webpack_require__(6986);
 
 function formatMatches(matches) {
   const values = [];
@@ -36,10 +30,8 @@ function formatMatches(matches) {
   return values;
 }
 
-function getStoryIds() {
-  const {
-    payload: { pull_request: pullRequest },
-  } = (_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context);
+function getStoryIds(githubCtx) {
+  const { pull_request: pullRequest } = githubCtx.payload;
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -49,13 +41,13 @@ function getStoryIds() {
   // Github user can include more than one CH story ID
   let storyIds = '';
 
-  _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Branch Name: ${branchName}`);
-  _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`PR Title: ${prTitle}`);
+  core.info(`Branch Name: ${branchName}`);
+  core.info(`PR Title: ${prTitle}`);
 
   if (branchStoryIds) {
     storyIds = formatMatches(branchStoryIds);
 
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Found Clubhouse ID(s) in Branch Name: ${storyIds.join(', ')}`);
+    core.info(`Found Clubhouse ID(s) in Branch Name: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
@@ -63,12 +55,12 @@ function getStoryIds() {
   if (prTitleStoryIds) {
     storyIds = prTitleStoryIds;
 
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Found Clubhouse ID(s) in PR Title: ${storyIds.join(', ')}`);
+    core.info(`Found Clubhouse ID(s) in PR Title: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
 
-  return _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(
+  return core.setFailed(
     'Action failed to find a Clubhouse ID in both the branch name and PR title.'
   );
 }
@@ -81,66 +73,68 @@ async function getClubhouseStory(client, storyIds) {
       .then((res) => res)
       .catch((err) => err.response);
   } catch (error) {
-    return _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error);
+    return core.setFailed(error);
   }
 }
 
-async function updatePullRequest(metadata) {
-  const ghToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ghToken');
-  const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1___default().getOctokit(ghToken);
+async function updatePullRequest(githubCtx, metadata) {
+  const ghToken = core.getInput('ghToken');
+  const octokit = github.getOctokit(ghToken);
   const {
-    payload: { pull_request: pullRequest },
-    repository,
-    repository_owner: owner,
-  } = (_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context);
+    pull_request: pullRequest,
+    repository: {
+      name: repo,
+      owner: { login },
+    },
+  } = githubCtx.payload;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
   const body = `${url} \n \n${originalBody}`;
 
   try {
-    octokit.pulls.update({
-      owner,
-      repo: repository,
+    await octokit.pulls.update({
+      repo,
+      owner: login,
       pull_number: pullRequest.number,
       title,
       body,
     });
   } catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error);
+    return core.setFailed(error);
   }
 }
 
 async function run() {
   try {
-    const ghToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ghToken');
-    const chToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('chToken');
+    const ghToken = core.getInput('ghToken');
+    const chToken = core.getInput('chToken');
 
     if (!ghToken) {
-      return _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Input ghToken is required.');
+      return core.setFailed('Input ghToken is required.');
     }
 
     if (!chToken) {
-      return _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Input chToken is required.');
+      return core.setFailed('Input chToken is required.');
     }
 
     // Mask tokens:
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setSecret('ghToken');
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setSecret('chToken');
+    core.setSecret('ghToken');
+    core.setSecret('chToken');
 
-    const client = clubhouse_lib__WEBPACK_IMPORTED_MODULE_2___default().create(chToken);
-    const storyIds = getStoryIds();
+    const client = Clubhouse.create(chToken);
+    const storyIds = getStoryIds(github.context);
     const story = await getClubhouseStory(client, storyIds);
     const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
     const storyNameAndId = `${story.name} ${formattedStoryIds}`;
 
-    await updatePullRequest({
+    await updatePullRequest(github.context, {
       title: storyNameAndId,
       url: story.app_url,
     });
 
-    return _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('prTitle', storyNameAndId);
+    return core.setOutput('prTitle', storyNameAndId);
   } catch (error) {
-    return _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+    return core.setFailed(error.message);
   }
 }
 
@@ -16759,18 +16753,6 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => module['default'] :
-/******/ 				() => module;
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
