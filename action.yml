@@ -1,0 +1,12 @@
+name: 'Clubhouse PR'
+description: 'Update Github PR with Clubhouse information'
+inputs:
+  ghToken:
+    description: 'Github token'
+    required: true
+  chToken:
+    description: 'Clubhouse API token'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

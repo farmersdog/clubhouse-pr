@@ -1,6 +1,10 @@
 # ClubHouse Pull Request Github Action
 
-Insert description here, Rae.
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+![Test](https://github.com/farmersdog/clubhouse-pr/workflows/Test/badge.svg)
+
+Automatically update your Github Pull Request with a Clubhouse title in the format: `(feat) Some Feature [ch123]`. And
+adds the Clubhouse story's URL to the beginning of the body of your PR.
 
 ## Inputs
 
@@ -8,24 +12,35 @@ Insert description here, Rae.
 
 **Required** GITHUB_TOKEN
 
+### `chToken`
+
+**Required** Clubhouse API Token
+
 ## Outputs
 
-### `pr-title`
+### `prTitle`
 
 The title of the pull request
 
+## Development
+
+Run `yarn tdd` to watch Jest tests as you make your changes.
+
+Run `yarn lint:watch` to watch for ESLint errors/warnings.
+
 ## Example usage
 
-Note: This is for use when *opening* or *synchronizing* a pull request.
+Note: This is for use when _opening_ a pull request.
 
 ```
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened]
 ```
 
 ```
 uses: actions/clubhouse-pr@v1
 with:
   ghToken: ${{ secrets.GITHUB_TOKEN }}
+  chToken: ${{ secrets.CLUBHOUSE_API_TOKEN }}
 ```
