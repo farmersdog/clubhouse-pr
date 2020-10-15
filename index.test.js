@@ -47,7 +47,7 @@ describe('Update Pull Request', () => {
 
   describe('getStoryIds', () => {
     test('should return storyIds from branchName', () => {
-      expect(action.getStoryIds()).toEqual(['1']);
+      expect(action.getStoryIds(github.context)).toEqual(['1']);
     });
 
     test('should return [ch#] storyIds from PR title', () => {
@@ -60,7 +60,7 @@ describe('Update Pull Request', () => {
         },
       };
 
-      expect(action.getStoryIds()).toEqual(['2']);
+      expect(action.getStoryIds(github.context)).toEqual(['2']);
     });
 
     test('should return ch# storyIds from PR title', () => {
@@ -73,7 +73,7 @@ describe('Update Pull Request', () => {
         },
       };
 
-      expect(action.getStoryIds()).toEqual(['2']);
+      expect(action.getStoryIds(github.context)).toEqual(['2']);
     });
 
     test('should exit if no ch id in PR title or branchName', () => {
@@ -86,7 +86,7 @@ describe('Update Pull Request', () => {
         },
       };
 
-      action.getStoryIds();
+      action.getStoryIds(github.context);
       expect(core.setFailed).toHaveBeenCalledTimes(1);
     });
   });

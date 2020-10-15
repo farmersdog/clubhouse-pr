@@ -1,6 +1,6 @@
-import * as core from '@actions/core';
-import github from '@actions/github';
-import Clubhouse from 'clubhouse-lib';
+const core = require('@actions/core');
+const github = require('@actions/github');
+const Clubhouse = require('clubhouse-lib');
 
 export function formatMatches(matches) {
   const values = [];
@@ -14,10 +14,8 @@ export function formatMatches(matches) {
   return values;
 }
 
-export function getStoryIds() {
-  const {
-    payload: { pull_request: pullRequest },
-  } = github.context;
+export function getStoryIds(githubCtx) {
+  const { pull_request: pullRequest } = githubCtx.payload;
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -63,28 +61,30 @@ export async function getClubhouseStory(client, storyIds) {
   }
 }
 
-export async function updatePullRequest(metadata) {
+export async function updatePullRequest(githubCtx, metadata) {
   const ghToken = core.getInput('ghToken');
   const octokit = github.getOctokit(ghToken);
   const {
-    payload: { pull_request: pullRequest },
-    repository,
-    repository_owner: owner,
-  } = github.context;
+    pull_request: pullRequest,
+    repository: {
+      name: repo,
+      owner: { login },
+    },
+  } = githubCtx.payload;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
   const body = `${url} \n \n${originalBody}`;
 
   try {
-    octokit.pulls.update({
-      owner,
-      repo: repository,
+    return await octokit.pulls.update({
+      repo,
+      owner: login,
       pull_number: pullRequest.number,
       title,
       body,
     });
   } catch (error) {
-    core.setFailed(error);
+    return core.setFailed(error);
   }
 }
 
@@ -106,12 +106,12 @@ export async function run() {
     core.setSecret('chToken');
 
     const client = Clubhouse.create(chToken);
-    const storyIds = getStoryIds();
+    const storyIds = getStoryIds(github.context);
     const story = await getClubhouseStory(client, storyIds);
     const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
     const storyNameAndId = `${story.name} ${formattedStoryIds}`;
 
-    await updatePullRequest({
+    await updatePullRequest(github.context, {
       title: storyNameAndId,
       url: story.app_url,
     });
