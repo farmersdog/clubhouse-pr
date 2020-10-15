@@ -76,7 +76,7 @@ export async function updatePullRequest(githubCtx, metadata) {
   const body = `${url} \n \n${originalBody}`;
 
   try {
-    await octokit.pulls.update({
+    return await octokit.pulls.update({
       repo,
       owner: login,
       pull_number: pullRequest.number,
