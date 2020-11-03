@@ -88,7 +88,7 @@ export async function updatePullRequest(githubCtx, metadata) {
   }
 }
 
-export async function createPrTitle(storyName, formattedStoryIds) {
+export async function createPrTitle(basePrTitle, formattedStoryIds) {
   return `${storyName} ${formattedStoryIds}`;
 }
 
@@ -111,11 +111,13 @@ export async function run() {
     core.setSecret('ghToken');
     core.setSecret('chToken');
 
+    const { pull_request: pullRequest } = github.context.payload;
     const client = Clubhouse.create(chToken);
     const storyIds = getStoryIds(github.context);
     const story = await getClubhouseStory(client, storyIds);
     const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-    const prTitle = createPrTitle(story.name, formattedStoryIds);
+    const basePrTitle = pullRequest.title === fetchStoryNameFlag ? story.name : pullRequest.title;
+    const prTitle = createPrTitle(basePrTitle, formattedStoryIds);
 
     await updatePullRequest(github.context, {
       title: prTitle,
