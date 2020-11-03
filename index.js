@@ -97,6 +97,7 @@ export async function run() {
     const ghToken = core.getInput('ghToken');
     const chToken = core.getInput('chToken');
     const prependType = core.getInput('prependType');
+    const fetchStoryNameFlag = core.getInput('fetchStoryNameFlag');
 
     if (!ghToken) {
       return core.setFailed('Input ghToken is required.');
