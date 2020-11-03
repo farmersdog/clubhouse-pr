@@ -7,6 +7,10 @@ inputs:
   chToken:
     description: 'Clubhouse API token'
     required: true
+  prependType:
+    description: 'Boolean to enable or disable prepending the story type to the PR title'
+    required: false
+    default: 'true'
 runs:
   using: 'node12'
   main: 'dist/index.js'
