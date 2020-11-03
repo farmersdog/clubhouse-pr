@@ -14,8 +14,7 @@ export function formatMatches(matches) {
   return values;
 }
 
-export function getStoryIds(githubCtx) {
-  const { pull_request: pullRequest } = githubCtx.payload;
+export function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -61,16 +60,17 @@ export async function getClubhouseStory(client, storyIds) {
   }
 }
 
-export async function updatePullRequest(githubCtx, metadata) {
-  const ghToken = core.getInput('ghToken');
+export async function updatePullRequest(
+  pullRequest,
+  repository,
+  metadata,
+  ghToken
+) {
   const octokit = github.getOctokit(ghToken);
   const {
-    pull_request: pullRequest,
-    repository: {
-      name: repo,
-      owner: { login },
-    },
-  } = githubCtx.payload;
+    name: repo,
+    owner: { login },
+  } = repository;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
   const body = `${url} \n \n${originalBody}`;
@@ -88,12 +88,40 @@ export async function updatePullRequest(githubCtx, metadata) {
   }
 }
 
+export async function fetchStorysAndUpdatePr(params) {
+  const {
+    ghToken,
+    chToken,
+    prependType,
+    fetchStoryNameFlag,
+    pullRequest,
+    repository,
+    dryRun,
+  } = params;
+
+  const client = Clubhouse.create(chToken);
+  const storyIds = getStoryIds(pullRequest);
+  const story = await getClubhouseStory(client, storyIds);
+  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
+  const basePrTitle =
+    pullRequest.title === fetchStoryNameFlag ? story.name : pullRequest.title;
+  const typePrefix = prependType ? `${story.type} ` : '';
+  const prTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+
+  if (!dryRun) {
+    await updatePullRequest(ghToken, pullRequest, repository, {
+      title: prTitle,
+      url: story.app_url,
+    });
+  }
+
+  return prTitle;
+}
+
 export async function run() {
   try {
     const ghToken = core.getInput('ghToken');
     const chToken = core.getInput('chToken');
-    const prependType = core.getInput('prependType');
-    const fetchStoryNameFlag = core.getInput('fetchStoryNameFlag');
 
     if (!ghToken) {
       return core.setFailed('Input ghToken is required.');
@@ -107,19 +135,17 @@ export async function run() {
     core.setSecret('ghToken');
     core.setSecret('chToken');
 
-    const { pull_request: pullRequest } = github.context.payload;
-    const client = Clubhouse.create(chToken);
-    const storyIds = getStoryIds(github.context);
-    const story = await getClubhouseStory(client, storyIds);
-    const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-    const basePrTitle = pullRequest.title === fetchStoryNameFlag ? story.name : pullRequest.title;
-    const typePrefix = prependType ? `${story.type} ` : '';
-    const prTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
-
-    await updatePullRequest(github.context, {
-      title: prTitle,
-      url: story.app_url,
-    });
+    const { pull_request: pullRequest, repository } = github.context.payload;
+    const params = {
+      ghToken,
+      chToken,
+      prependType: core.getInput('prependType'),
+      fetchStoryNameFlag: core.getInput('fetchStoryNameFlag'),
+      pullRequest,
+      repository,
+      dryRun: false,
+    };
+    const prTitle = fetchStorysAndUpdatePr(params);
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {

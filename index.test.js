@@ -47,46 +47,35 @@ describe('Update Pull Request', () => {
 
   describe('getStoryIds', () => {
     test('should return storyIds from branchName', () => {
-      expect(action.getStoryIds(github.context)).toEqual(['1']);
+      const { pull_request: pullRequest } = github.context.payload;
+      expect(action.getStoryIds(pullRequest)).toEqual(['1']);
     });
 
     test('should return [ch#] storyIds from PR title', () => {
-      github.context = {
-        payload: {
-          pull_request: {
-            title: '[ch2]',
-            head: { ref: 'i-named-this-in-a-diff-format' },
-          },
-        },
+      const pullRequest = {
+        title: '[ch2]',
+        head: { ref: 'i-named-this-in-a-diff-format' },
       };
 
-      expect(action.getStoryIds(github.context)).toEqual(['2']);
+      expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
     test('should return ch# storyIds from PR title', () => {
-      github.context = {
-        payload: {
-          pull_request: {
-            title: 'ch2',
-            head: { ref: 'i-named-this-in-a-diff-format' },
-          },
-        },
+      const pullRequest = {
+        title: 'ch2',
+        head: { ref: 'i-named-this-in-a-diff-format' },
       };
 
-      expect(action.getStoryIds(github.context)).toEqual(['2']);
+      expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
     test('should exit if no ch id in PR title or branchName', () => {
-      github.context = {
-        payload: {
-          pull_request: {
-            title: 'I have nothing related to ch ids in my title',
-            head: { ref: 'i-dont-have-a-ch-id-in-here' },
-          },
-        },
+      const pullRequest = {
+        title: 'I have nothing related to ch ids in my title',
+        head: { ref: 'i-dont-have-a-ch-id-in-here' },
       };
 
-      action.getStoryIds(github.context);
+      action.getStoryIds(pullRequest);
       expect(core.setFailed).toHaveBeenCalledTimes(1);
     });
   });
