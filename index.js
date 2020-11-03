@@ -88,6 +88,10 @@ export async function updatePullRequest(githubCtx, metadata) {
   }
 }
 
+export async function createPrTitle(storyName, formattedStoryIds) {
+  return `${storyName} ${formattedStoryIds}`;
+}
+
 export async function run() {
   try {
     const ghToken = core.getInput('ghToken');
@@ -110,14 +114,14 @@ export async function run() {
     const storyIds = getStoryIds(github.context);
     const story = await getClubhouseStory(client, storyIds);
     const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-    const storyNameAndId = `${story.name} ${formattedStoryIds}`;
+    const prTitle = createPrTitle(story.name, formattedStoryIds);
 
     await updatePullRequest(github.context, {
-      title: storyNameAndId,
+      title: prTitle,
       url: story.app_url,
     });
 
-    return core.setOutput('prTitle', storyNameAndId);
+    return core.setOutput('prTitle', prTitle);
   } catch (error) {
     return core.setFailed(error.message);
   }
