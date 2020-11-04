@@ -12,6 +12,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "getStoryIds": () => /* binding */ getStoryIds,
 /* harmony export */   "getClubhouseStory": () => /* binding */ getClubhouseStory,
 /* harmony export */   "updatePullRequest": () => /* binding */ updatePullRequest,
+/* harmony export */   "getTitle": () => /* binding */ getTitle,
+/* harmony export */   "fetchStoryAndUpdatePr": () => /* binding */ fetchStoryAndUpdatePr,
 /* harmony export */   "run": () => /* binding */ run
 /* harmony export */ });
 const core = __webpack_require__(2186);
@@ -30,8 +32,7 @@ function formatMatches(matches) {
   return values;
 }
 
-function getStoryIds(githubCtx) {
-  const { pull_request: pullRequest } = githubCtx.payload;
+function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -77,19 +78,20 @@ async function getClubhouseStory(client, storyIds) {
   }
 }
 
-async function updatePullRequest(githubCtx, metadata) {
-  const ghToken = core.getInput('ghToken');
+async function updatePullRequest(
+  pullRequest,
+  repository,
+  metadata,
+  ghToken
+) {
   const octokit = github.getOctokit(ghToken);
   const {
-    pull_request: pullRequest,
-    repository: {
-      name: repo,
-      owner: { login },
-    },
-  } = githubCtx.payload;
+    name: repo,
+    owner: { login },
+  } = repository;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
-  const body = `${url} \n \n${originalBody}`;
+  const body = `Story Details: ${url} \n \n${originalBody}`;
 
   try {
     return await octokit.pulls.update({
@@ -102,6 +104,54 @@ async function updatePullRequest(githubCtx, metadata) {
   } catch (error) {
     return core.setFailed(error);
   }
+}
+
+async function getTitle(
+  storyIds,
+  story,
+  prTitle,
+  useStoryNameTrigger,
+  addStoryType
+) {
+  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
+  core.info(`PR Title: ${prTitle}`);
+  core.info(`Story Name Trigger: ${useStoryNameTrigger}`);
+  const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
+  core.info(`Base PR Title: ${basePrTitle}`);
+  const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
+  const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+  return newTitle;
+}
+
+async function fetchStoryAndUpdatePr(params) {
+  const {
+    ghToken,
+    chToken,
+    addStoryType,
+    useStoryNameTrigger,
+    pullRequest,
+    repository,
+    dryRun,
+  } = params;
+  const client = Clubhouse.create(chToken);
+  const storyIds = getStoryIds(pullRequest);
+  const story = await getClubhouseStory(client, storyIds);
+  const newTitle = getTitle(
+    storyIds,
+    story,
+    pullRequest.title,
+    useStoryNameTrigger,
+    addStoryType
+  );
+
+  if (!dryRun) {
+    await updatePullRequest(ghToken, pullRequest, repository, {
+      title: newTitle,
+      url: story.app_url,
+    });
+  }
+
+  return newTitle;
 }
 
 async function run() {
@@ -121,24 +171,28 @@ async function run() {
     core.setSecret('ghToken');
     core.setSecret('chToken');
 
-    const client = Clubhouse.create(chToken);
-    const storyIds = getStoryIds(github.context);
-    const story = await getClubhouseStory(client, storyIds);
-    const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-    const storyNameAndId = `${story.name} ${formattedStoryIds}`;
+    const { pull_request: pullRequest, repository } = github.context.payload;
+    const params = {
+      ghToken,
+      chToken,
+      addStoryType: core.getInput('addStoryType'),
+      useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
+      pullRequest,
+      repository,
+      dryRun: false,
+    };
+    const prTitle = fetchStoryAndUpdatePr(params);
 
-    await updatePullRequest(github.context, {
-      title: storyNameAndId,
-      url: story.app_url,
-    });
-
-    return core.setOutput('prTitle', storyNameAndId);
+    return core.setOutput('prTitle', prTitle);
   } catch (error) {
     return core.setFailed(error.message);
   }
 }
 
-run();
+// Always true in the actions env
+if (process.env.GITHUB_ACTIONS) {
+  run();
+}
 
 
 /***/ }),
@@ -157,6 +211,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const os = __importStar(__webpack_require__(2087));
+const utils_1 = __webpack_require__(5278);
 /**
  * Commands
  *
@@ -210,28 +265,14 @@ class Command {
         return cmdStr;
     }
 }
-/**
- * Sanitizes an input into a string so it can be passed into issueCommand safely
- * @param input input to sanitize into a string
- */
-function toCommandValue(input) {
-    if (input === null || input === undefined) {
-        return '';
-    }
-    else if (typeof input === 'string' || input instanceof String) {
-        return input;
-    }
-    return JSON.stringify(input);
-}
-exports.toCommandValue = toCommandValue;
 function escapeData(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -265,6 +306,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const command_1 = __webpack_require__(7351);
+const file_command_1 = __webpack_require__(717);
+const utils_1 = __webpack_require__(5278);
 const os = __importStar(__webpack_require__(2087));
 const path = __importStar(__webpack_require__(5622));
 /**
@@ -291,9 +334,17 @@ var ExitCode;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    const convertedVal = command_1.toCommandValue(val);
+    const convertedVal = utils_1.toCommandValue(val);
     process.env[name] = convertedVal;
-    command_1.issueCommand('set-env', { name }, convertedVal);
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -309,7 +360,13 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command_1.issueCommand('add-path', {}, inputPath);
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
@@ -468,6 +525,68 @@ function getState(name) {
 }
 exports.getState = getState;
 //# sourceMappingURL=core.js.map
+
+/***/ }),
+
+/***/ 717:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(5747));
+const os = __importStar(__webpack_require__(2087));
+const utils_1 = __webpack_require__(5278);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
+
+/***/ }),
+
+/***/ 5278:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
 
 /***/ }),
 
