@@ -1,0 +1,17 @@
+name: Update PR Title & Body with Clubhouse Info
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update PR
+        uses: ${{ github.workspace }}
+        with:
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chToken: ${{ secrets.CLUBHOUSE_TOKEN }}
