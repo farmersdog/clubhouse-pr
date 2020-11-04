@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const Clubhouse = require('clubhouse-lib');
 
-export function formatMatches(matches) {
+function formatMatches(matches) {
   const values = [];
 
   matches.forEach((match) => {
@@ -14,7 +14,7 @@ export function formatMatches(matches) {
   return values;
 }
 
-export function getStoryIds(pullRequest) {
+function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -48,7 +48,7 @@ export function getStoryIds(pullRequest) {
   );
 }
 
-export async function getClubhouseStory(client, storyIds) {
+async function getClubhouseStory(client, storyIds) {
   // Even if there's more than one storyId, fetch only first story name:
   try {
     return client
@@ -60,12 +60,7 @@ export async function getClubhouseStory(client, storyIds) {
   }
 }
 
-export async function updatePullRequest(
-  ghToken,
-  pullRequest,
-  repository,
-  metadata
-) {
+async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const octokit = github.getOctokit(ghToken);
   const {
     name: repo,
@@ -88,7 +83,7 @@ export async function updatePullRequest(
   }
 }
 
-export async function getTitle(
+async function getTitle(
   storyIds,
   story,
   prTitle,
@@ -102,7 +97,7 @@ export async function getTitle(
   return newTitle;
 }
 
-export async function fetchStoryAndUpdatePr(params) {
+async function fetchStoryAndUpdatePr(params) {
   const {
     ghToken,
     chToken,
@@ -133,7 +128,7 @@ export async function fetchStoryAndUpdatePr(params) {
   return newTitle;
 }
 
-export async function run() {
+async function run() {
   try {
     const ghToken = core.getInput('ghToken');
     const chToken = core.getInput('chToken');
@@ -172,3 +167,12 @@ export async function run() {
 if (process.env.GITHUB_ACTIONS) {
   run();
 }
+
+export {
+  formatMatches,
+  getStoryIds,
+  getClubhouseStory,
+  getTitle,
+  fetchStoryAndUpdatePr,
+  run,
+};
