@@ -6,7 +6,7 @@ const help = `
 
     Basic Usage:
 
-    node scripts/createTitle.js \\
+    node -r @babel/register scripts/createTitle.js \\
         --prTitle 'ch' \\
         --branchName 'user/ch12345/name-of-a-ticket' \\
     ;
