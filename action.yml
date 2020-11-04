@@ -12,7 +12,7 @@ inputs:
     required: false
     default: 'true'
   useStoryNameTrigger:
-    description: 'If a PR is opened with this string as the title, fetch the story name from clubhouse'
+    description: 'When a PR is opened with this string as the title, fetch the story name from clubhouse'
     required: false
     default: 'ch'
 runs:
