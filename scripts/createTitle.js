@@ -1,6 +1,6 @@
 const { argv } = require('yargs');
 
-const { fetchStorysAndUpdatePr } = require('../index');
+const { fetchStoryAndUpdatePr } = require('../index');
 
 const help = `
 
@@ -33,7 +33,7 @@ async function createTitle(args) {
     repository: {},
     dryRun: true,
   };
-  const newPrTitle = await fetchStorysAndUpdatePr(params);
+  const newPrTitle = await fetchStoryAndUpdatePr(params);
   console.log(`Created Title: ${newPrTitle}`);
 }
 
