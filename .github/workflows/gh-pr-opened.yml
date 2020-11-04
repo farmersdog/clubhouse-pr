@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          path: action
 
       - name: Update PR
-        uses: ${{ github.workspace }}
+        uses: './action'
         with:
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chToken: ${{ secrets.CLUBHOUSE_TOKEN }}
