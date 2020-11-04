@@ -27,8 +27,8 @@ async function createTitle(args) {
   const params = {
     ghToken: 'aaaaaaaa',
     chToken: process.env.CH_TOKEN,
-    prependType: true,
-    fetchStoryNameFlag: 'ch',
+    addStoryType: true,
+    useStoryNameTrigger: 'ch',
     pullRequest,
     repository: {},
     dryRun: true,

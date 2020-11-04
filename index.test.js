@@ -45,6 +45,45 @@ describe('Update Pull Request', () => {
     });
   });
 
+  describe('Creating the PR Title', () => {
+    test('should use story name from clubhouse as title', async () => {
+      const prTitle = await action.getTitle(
+        ['5678'],
+        { name: 'A clubhouse story name', story_type: 'feature' },
+        'ch',
+        'ch',
+        true
+      );
+      expect(prTitle).toEqual('(feature) A clubhouse story name [ch5678]');
+    });
+
+    test('should not use story name from clubhouse as title', async () => {
+      const prTitle = await action.getTitle(
+        ['5678'],
+        { name: 'A clubhouse story name', story_type: 'feature' },
+        'A PR title that should not be replaced',
+        'ch',
+        true
+      );
+      expect(prTitle).toEqual(
+        '(feature) A PR title that should not be replaced [ch5678]'
+      );
+    });
+
+    test('should not add story type when option is false', async () => {
+      const prTitle = await action.getTitle(
+        ['5678'],
+        { name: 'A clubhouse story name', story_type: 'feature' },
+        'A PR title that should not be replaced',
+        'ch',
+        false
+      );
+      expect(prTitle).toEqual(
+        'A PR title that should not be replaced [ch5678]'
+      );
+    });
+  });
+
   describe('getStoryIds', () => {
     test('should return storyIds from branchName', () => {
       const { pull_request: pullRequest } = github.context.payload;

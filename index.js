@@ -88,34 +88,49 @@ export async function updatePullRequest(
   }
 }
 
+export async function getTitle(
+  storyIds,
+  story,
+  prTitle,
+  useStoryNameTrigger,
+  addStoryType
+) {
+  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
+  const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
+  const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
+  const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+  return newTitle;
+}
+
 export async function fetchStorysAndUpdatePr(params) {
   const {
     ghToken,
     chToken,
-    prependType,
-    fetchStoryNameFlag,
+    addStoryType,
+    useStoryNameTrigger,
     pullRequest,
     repository,
     dryRun,
   } = params;
-
   const client = Clubhouse.create(chToken);
   const storyIds = getStoryIds(pullRequest);
   const story = await getClubhouseStory(client, storyIds);
-  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-  const basePrTitle =
-    pullRequest.title === fetchStoryNameFlag ? story.name : pullRequest.title;
-  const typePrefix = prependType ? `(${story.story_type}) ` : '';
-  const prTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+  const newTitle = getTitle(
+    storyIds,
+    story,
+    pullRequest.title,
+    useStoryNameTrigger,
+    addStoryType
+  );
 
   if (!dryRun) {
     await updatePullRequest(ghToken, pullRequest, repository, {
-      title: prTitle,
+      title: newTitle,
       url: story.app_url,
     });
   }
 
-  return prTitle;
+  return newTitle;
 }
 
 export async function run() {
@@ -139,8 +154,8 @@ export async function run() {
     const params = {
       ghToken,
       chToken,
-      prependType: core.getInput('prependType'),
-      fetchStoryNameFlag: core.getInput('fetchStoryNameFlag'),
+      addStoryType: core.getInput('addStoryType'),
+      useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,
       dryRun: false,
