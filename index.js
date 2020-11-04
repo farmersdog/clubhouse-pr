@@ -61,10 +61,10 @@ export async function getClubhouseStory(client, storyIds) {
 }
 
 export async function updatePullRequest(
+  ghToken,
   pullRequest,
   repository,
-  metadata,
-  ghToken
+  metadata
 ) {
   const octokit = github.getOctokit(ghToken);
   const {
