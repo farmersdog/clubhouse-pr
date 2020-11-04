@@ -105,7 +105,7 @@ export async function fetchStorysAndUpdatePr(params) {
   const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
   const basePrTitle =
     pullRequest.title === fetchStoryNameFlag ? story.name : pullRequest.title;
-  const typePrefix = prependType ? `${story.type} ` : '';
+  const typePrefix = prependType ? `(${story.story_type}) ` : '';
   const prTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
 
   if (!dryRun) {
@@ -153,4 +153,7 @@ export async function run() {
   }
 }
 
-run();
+// Always true in the actions env
+if (process.env.GITHUB_ACTIONS) {
+  run();
+}
