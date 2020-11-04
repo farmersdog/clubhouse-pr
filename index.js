@@ -102,7 +102,7 @@ export async function getTitle(
   return newTitle;
 }
 
-export async function fetchStorysAndUpdatePr(params) {
+export async function fetchStoryAndUpdatePr(params) {
   const {
     ghToken,
     chToken,
@@ -160,7 +160,7 @@ export async function run() {
       repository,
       dryRun: false,
     };
-    const prTitle = fetchStorysAndUpdatePr(params);
+    const prTitle = fetchStoryAndUpdatePr(params);
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {
