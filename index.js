@@ -73,7 +73,7 @@ export async function updatePullRequest(
   } = repository;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
-  const body = `${url} \n \n${originalBody}`;
+  const body = `Story Details: ${url} \n \n${originalBody}`;
 
   try {
     return await octokit.pulls.update({
