@@ -88,7 +88,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const body = `Story Details: ${url} \n \n${originalBody}`;
 
   try {
-    core.info(`Updating Title: ${title}`)
+    core.info(`Updating Title: ${title}`);
     return await octokit.pulls.update({
       repo,
       owner: login,
@@ -101,13 +101,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   }
 }
 
-async function getTitle(
-  storyIds,
-  story,
-  prTitle,
-  useStoryNameTrigger,
-  addStoryType
-) {
+function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
   const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
@@ -173,7 +167,7 @@ async function run() {
       repository,
       dryRun: false,
     };
-    const prTitle = fetchStoryAndUpdatePr(params);
+    const prTitle = await fetchStoryAndUpdatePr(params);
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {
