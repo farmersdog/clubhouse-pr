@@ -96,10 +96,7 @@ export async function getTitle(
   addStoryType
 ) {
   const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-  core.info(`PR Title: ${prTitle}`);
-  core.info(`Story Name Trigger: ${useStoryNameTrigger}`);
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
-  core.info(`Base PR Title: ${basePrTitle}`);
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
   const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
   return newTitle;
