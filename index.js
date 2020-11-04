@@ -150,7 +150,7 @@ async function run() {
       repository,
       dryRun: false,
     };
-    const prTitle = fetchStoryAndUpdatePr(params);
+    const prTitle = await fetchStoryAndUpdatePr(params);
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {
