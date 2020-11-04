@@ -88,6 +88,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const body = `Story Details: ${url} \n \n${originalBody}`;
 
   try {
+    core.info(`Updating Title: ${title}`)
     return await octokit.pulls.update({
       repo,
       owner: login,
