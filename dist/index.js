@@ -11,7 +11,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "formatMatches": () => /* binding */ formatMatches,
 /* harmony export */   "getStoryIds": () => /* binding */ getStoryIds,
 /* harmony export */   "getClubhouseStory": () => /* binding */ getClubhouseStory,
-/* harmony export */   "updatePullRequest": () => /* binding */ updatePullRequest,
 /* harmony export */   "getTitle": () => /* binding */ getTitle,
 /* harmony export */   "fetchStoryAndUpdatePr": () => /* binding */ fetchStoryAndUpdatePr,
 /* harmony export */   "run": () => /* binding */ run
@@ -78,12 +77,7 @@ async function getClubhouseStory(client, storyIds) {
   }
 }
 
-async function updatePullRequest(
-  pullRequest,
-  repository,
-  metadata,
-  ghToken
-) {
+async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const octokit = github.getOctokit(ghToken);
   const {
     name: repo,
@@ -114,10 +108,7 @@ async function getTitle(
   addStoryType
 ) {
   const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-  core.info(`PR Title: ${prTitle}`);
-  core.info(`Story Name Trigger: ${useStoryNameTrigger}`);
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
-  core.info(`Base PR Title: ${basePrTitle}`);
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
   const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
   return newTitle;
@@ -193,6 +184,8 @@ async function run() {
 if (process.env.GITHUB_ACTIONS) {
   run();
 }
+
+
 
 
 /***/ }),
