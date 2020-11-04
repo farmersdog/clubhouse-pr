@@ -84,13 +84,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   }
 }
 
-async function getTitle(
-  storyIds,
-  story,
-  prTitle,
-  useStoryNameTrigger,
-  addStoryType
-) {
+function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
   const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
