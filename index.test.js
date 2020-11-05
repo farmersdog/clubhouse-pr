@@ -47,7 +47,7 @@ describe('Update Pull Request', () => {
 
   describe('Creating the PR Title', () => {
     test('should use story name from clubhouse as title', async () => {
-      const prTitle = await action.getTitle(
+      const prTitle = action.getTitle(
         ['5678'],
         { name: 'A clubhouse story name', story_type: 'feature' },
         'ch',
@@ -58,7 +58,7 @@ describe('Update Pull Request', () => {
     });
 
     test('should not use story name from clubhouse as title', async () => {
-      const prTitle = await action.getTitle(
+      const prTitle = action.getTitle(
         ['5678'],
         { name: 'A clubhouse story name', story_type: 'feature' },
         'A PR title that should not be replaced',
@@ -71,7 +71,7 @@ describe('Update Pull Request', () => {
     });
 
     test('should not add story type when option is false', async () => {
-      const prTitle = await action.getTitle(
+      const prTitle = action.getTitle(
         ['5678'],
         { name: 'A clubhouse story name', story_type: 'feature' },
         'A PR title that should not be replaced',
