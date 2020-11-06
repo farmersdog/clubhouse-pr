@@ -45,48 +45,76 @@ describe('Update Pull Request', () => {
     });
   });
 
+  describe('Creating the PR Title', () => {
+    test('should use story name from clubhouse as title', async () => {
+      const prTitle = action.getTitle(
+        ['5678'],
+        { name: 'A clubhouse story name', story_type: 'feature' },
+        'ch',
+        'ch',
+        true
+      );
+      expect(prTitle).toEqual('(feature) A clubhouse story name [ch5678]');
+    });
+
+    test('should not use story name from clubhouse as title', async () => {
+      const prTitle = action.getTitle(
+        ['5678'],
+        { name: 'A clubhouse story name', story_type: 'feature' },
+        'A PR title that should not be replaced',
+        'ch',
+        true
+      );
+      expect(prTitle).toEqual(
+        '(feature) A PR title that should not be replaced [ch5678]'
+      );
+    });
+
+    test('should not add story type when option is false', async () => {
+      const prTitle = action.getTitle(
+        ['5678'],
+        { name: 'A clubhouse story name', story_type: 'feature' },
+        'A PR title that should not be replaced',
+        'ch',
+        false
+      );
+      expect(prTitle).toEqual(
+        'A PR title that should not be replaced [ch5678]'
+      );
+    });
+  });
+
   describe('getStoryIds', () => {
     test('should return storyIds from branchName', () => {
-      expect(action.getStoryIds(github.context)).toEqual(['1']);
+      const { pull_request: pullRequest } = github.context.payload;
+      expect(action.getStoryIds(pullRequest)).toEqual(['1']);
     });
 
     test('should return [ch#] storyIds from PR title', () => {
-      github.context = {
-        payload: {
-          pull_request: {
-            title: '[ch2]',
-            head: { ref: 'i-named-this-in-a-diff-format' },
-          },
-        },
+      const pullRequest = {
+        title: '[ch2]',
+        head: { ref: 'i-named-this-in-a-diff-format' },
       };
 
-      expect(action.getStoryIds(github.context)).toEqual(['2']);
+      expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
     test('should return ch# storyIds from PR title', () => {
-      github.context = {
-        payload: {
-          pull_request: {
-            title: 'ch2',
-            head: { ref: 'i-named-this-in-a-diff-format' },
-          },
-        },
+      const pullRequest = {
+        title: 'ch2',
+        head: { ref: 'i-named-this-in-a-diff-format' },
       };
 
-      expect(action.getStoryIds(github.context)).toEqual(['2']);
+      expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
     test('should exit if no ch id in PR title or branchName', () => {
-      github.context = {
-        payload: {
-          pull_request: {
-            title: 'I have nothing related to ch ids in my title',
-            head: { ref: 'i-dont-have-a-ch-id-in-here' },
-          },
-        },
+      const pullRequest = {
+        title: 'I have nothing related to ch ids in my title',
+        head: { ref: 'i-dont-have-a-ch-id-in-here' },
       };
 
-      action.getStoryIds(github.context);
+      action.getStoryIds(pullRequest);
       expect(core.setFailed).toHaveBeenCalledTimes(1);
     });
   });

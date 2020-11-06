@@ -7,6 +7,14 @@ inputs:
   chToken:
     description: 'Clubhouse API token'
     required: true
+  addStoryType:
+    description: 'Boolean to enable or disable prepending the story type to the PR title'
+    required: false
+    default: 'true'
+  useStoryNameTrigger:
+    description: 'When a PR is opened with this string as the title, fetch the story name from clubhouse'
+    required: false
+    default: 'ch'
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const Clubhouse = require('clubhouse-lib');
 
-export function formatMatches(matches) {
+function formatMatches(matches) {
   const values = [];
 
   matches.forEach((match) => {
@@ -14,8 +14,7 @@ export function formatMatches(matches) {
   return values;
 }
 
-export function getStoryIds(githubCtx) {
-  const { pull_request: pullRequest } = githubCtx.payload;
+function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -49,7 +48,7 @@ export function getStoryIds(githubCtx) {
   );
 }
 
-export async function getClubhouseStory(client, storyIds) {
+async function getClubhouseStory(client, storyIds) {
   // Even if there's more than one storyId, fetch only first story name:
   try {
     return client
@@ -61,21 +60,18 @@ export async function getClubhouseStory(client, storyIds) {
   }
 }
 
-export async function updatePullRequest(githubCtx, metadata) {
-  const ghToken = core.getInput('ghToken');
+async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const octokit = github.getOctokit(ghToken);
   const {
-    pull_request: pullRequest,
-    repository: {
-      name: repo,
-      owner: { login },
-    },
-  } = githubCtx.payload;
+    name: repo,
+    owner: { login },
+  } = repository;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
-  const body = `${url} \n \n${originalBody}`;
+  const body = `Story Details: ${url} \n \n${originalBody}`;
 
   try {
+    core.info(`Updating Title: ${title}`);
     return await octokit.pulls.update({
       repo,
       owner: login,
@@ -88,7 +84,46 @@ export async function updatePullRequest(githubCtx, metadata) {
   }
 }
 
-export async function run() {
+function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
+  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
+  const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
+  const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
+  const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+  return newTitle;
+}
+
+async function fetchStoryAndUpdatePr(params) {
+  const {
+    ghToken,
+    chToken,
+    addStoryType,
+    useStoryNameTrigger,
+    pullRequest,
+    repository,
+    dryRun,
+  } = params;
+  const client = Clubhouse.create(chToken);
+  const storyIds = getStoryIds(pullRequest);
+  const story = await getClubhouseStory(client, storyIds);
+  const newTitle = getTitle(
+    storyIds,
+    story,
+    pullRequest.title,
+    useStoryNameTrigger,
+    addStoryType
+  );
+
+  if (!dryRun) {
+    await updatePullRequest(ghToken, pullRequest, repository, {
+      title: newTitle,
+      url: story.app_url,
+    });
+  }
+
+  return newTitle;
+}
+
+async function run() {
   try {
     const ghToken = core.getInput('ghToken');
     const chToken = core.getInput('chToken');
@@ -105,21 +140,34 @@ export async function run() {
     core.setSecret('ghToken');
     core.setSecret('chToken');
 
-    const client = Clubhouse.create(chToken);
-    const storyIds = getStoryIds(github.context);
-    const story = await getClubhouseStory(client, storyIds);
-    const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
-    const storyNameAndId = `${story.name} ${formattedStoryIds}`;
+    const { pull_request: pullRequest, repository } = github.context.payload;
+    const params = {
+      ghToken,
+      chToken,
+      addStoryType: core.getInput('addStoryType'),
+      useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
+      pullRequest,
+      repository,
+      dryRun: false,
+    };
+    const prTitle = await fetchStoryAndUpdatePr(params);
 
-    await updatePullRequest(github.context, {
-      title: storyNameAndId,
-      url: story.app_url,
-    });
-
-    return core.setOutput('prTitle', storyNameAndId);
+    return core.setOutput('prTitle', prTitle);
   } catch (error) {
     return core.setFailed(error.message);
   }
 }
 
-run();
+// Always true in the actions env
+if (process.env.GITHUB_ACTIONS) {
+  run();
+}
+
+export {
+  formatMatches,
+  getStoryIds,
+  getClubhouseStory,
+  getTitle,
+  fetchStoryAndUpdatePr,
+  run,
+};
