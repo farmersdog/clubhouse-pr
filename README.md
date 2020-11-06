@@ -54,7 +54,7 @@ on:
 ```
 
 ```
-uses: actions/clubhouse-pr@v1
+uses: actions/clubhouse-pr@v2
 with:
   ghToken: ${{ secrets.GITHUB_TOKEN }}
   chToken: ${{ secrets.CLUBHOUSE_API_TOKEN }}
