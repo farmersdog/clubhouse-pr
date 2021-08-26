@@ -38,11 +38,14 @@ function getStoryIds(pullRequest) {
   const prTitle = pullRequest.title;
   // Github user can enter CH story ID in either format: '[ch123]' or 'ch123':
   const prTitleStoryIds = prTitle.match(/(?<=ch)\d+/g);
+  const prBody = pullRequest.body != null ? pullRequest.body : '';
+  const prBodyStoryIds = prBody.match(/(?<=ch)\d+/g);
   // Github user can include more than one CH story ID
   let storyIds = '';
 
   core.info(`Branch Name: ${branchName}`);
   core.info(`PR Title: ${prTitle}`);
+  core.info(`PR Body: ${prBody}`);
 
   if (branchStoryIds) {
     storyIds = formatMatches(branchStoryIds);
@@ -56,6 +59,14 @@ function getStoryIds(pullRequest) {
     storyIds = prTitleStoryIds;
 
     core.info(`Found Clubhouse ID(s) in PR Title: ${storyIds.join(', ')}`);
+
+    return storyIds;
+  }
+
+  if (prBodyStoryIds) {
+    storyIds = prBodyStoryIds;
+
+    core.info(`Found Clubhouse ID(s) in PR Body: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
