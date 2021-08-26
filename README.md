@@ -29,6 +29,12 @@ This action is configured to extract the clubhouse story id form either the bran
 
 **Default** `ch`
 
+### `throwErrorIfNoChStory`
+
+**Optional** Should this GitHub Action throw an error if the PR is not connected to any Clubhouse story
+
+**Default** `true`
+
 ## Outputs
 
 ### `prTitle`

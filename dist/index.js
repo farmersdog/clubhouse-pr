@@ -31,7 +31,7 @@ function formatMatches(matches) {
   return values;
 }
 
-function getStoryIds(pullRequest) {
+function getStoryIds(pullRequest, throwErrorIfNoChStory) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/ch123/something
   const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
@@ -60,21 +60,23 @@ function getStoryIds(pullRequest) {
     return storyIds;
   }
 
-  return core.setFailed(
-    'Action failed to find a Clubhouse ID in both the branch name and PR title.'
-  );
+  const message = 'Action failed to find a Clubhouse ID in both the branch name and PR title.';
+
+  if (throwErrorIfNoChStory) {
+    throw new Error(message);
+  }
+
+  core.info(message);
+
+  return [];
 }
 
 async function getClubhouseStory(client, storyIds) {
   // Even if there's more than one storyId, fetch only first story name:
-  try {
-    return client
-      .getStory(storyIds[0])
-      .then((res) => res)
-      .catch((err) => err.response);
-  } catch (error) {
-    return core.setFailed(error);
-  }
+  return client
+    .getStory(storyIds[0])
+    .then((res) => res)
+    .catch((err) => err.response);
 }
 
 async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
@@ -117,10 +119,16 @@ async function fetchStoryAndUpdatePr(params) {
     useStoryNameTrigger,
     pullRequest,
     repository,
+    throwErrorIfNoChStory,
     dryRun,
   } = params;
   const client = Clubhouse.create(chToken);
-  const storyIds = getStoryIds(pullRequest);
+  const storyIds = getStoryIds(pullRequest, throwErrorIfNoChStory);
+
+  if (!storyIds) {
+    return null;
+  }
+
   const story = await getClubhouseStory(client, storyIds);
   const newTitle = getTitle(
     storyIds,
@@ -165,6 +173,7 @@ async function run() {
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,
+      throwErrorIfNoChStory: core.getInput('throwErrorIfNoChStory') !== 'false',
       dryRun: false,
     };
     const prTitle = await fetchStoryAndUpdatePr(params);
