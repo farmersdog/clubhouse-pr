@@ -11,6 +11,10 @@ inputs:
     description: 'Boolean to enable or disable prepending the story type to the PR title'
     required: false
     default: 'true'
+  addStoryIds:
+    description: 'Boolean to enable or disable appending the story ids to the PR title'
+    required: false
+    default: 'true'
   useStoryNameTrigger:
     description: 'When a PR is opened with this string as the title, fetch the story name from clubhouse'
     required: false

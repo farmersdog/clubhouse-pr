@@ -101,8 +101,8 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   }
 }
 
-function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
-  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
+function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType, addStoryIds) {
+  const formattedStoryIds = addStoryIds ? storyIds.map((id) => `[ch${id}]`).join(' ') : '';
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
   const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
@@ -114,6 +114,7 @@ async function fetchStoryAndUpdatePr(params) {
     ghToken,
     chToken,
     addStoryType,
+    addStoryIds,
     useStoryNameTrigger,
     pullRequest,
     repository,
@@ -127,7 +128,8 @@ async function fetchStoryAndUpdatePr(params) {
     story,
     pullRequest.title,
     useStoryNameTrigger,
-    addStoryType
+    addStoryType,
+    addStoryIds
   );
 
   if (!dryRun) {
@@ -162,6 +164,7 @@ async function run() {
       ghToken,
       chToken,
       addStoryType: core.getInput('addStoryType'),
+      addStoryIds: core.getInput('addStoryIds') !== 'false',
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,

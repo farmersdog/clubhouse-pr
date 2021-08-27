@@ -23,6 +23,12 @@ This action is configured to extract the clubhouse story id form either the bran
 
 **Default** `true`
 
+### `addStoryIds`
+
+**Optional** Boolean to enable or disable appending the story ids to the PR title
+
+**Default** `true`
+
 ### `useStoryNameTrigger`
 
 **Optional** When a PR is opened with this string as the title, fetch the story name from clubhouse
