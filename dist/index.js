@@ -33,8 +33,9 @@ function formatMatches(matches) {
 
 function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
-  // Only when a Github user formats their branchName as: text/ch123/something
-  const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
+  // Only when a Github user formats their branchName as:
+  // ch123/something or text/ch123/something
+  const branchStoryIds = branchName.match(/^(ch)(\d+)\/|\/(ch)(\d+)\//g);
   const prTitle = pullRequest.title;
   // Github user can enter CH story ID in either format: '[ch123]' or 'ch123':
   const prTitleStoryIds = prTitle.match(/(?<=ch)\d+/g);
