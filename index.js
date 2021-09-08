@@ -17,10 +17,10 @@ function formatMatches(matches) {
 function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/sc-123/something
-  const branchStoryIds = branchName.match(/\/(sc\-)(\d+)\//g);
+  const branchStoryIds = branchName.match(/\/(sc-)(\d+)\//g);
   const prTitle = pullRequest.title;
   // Github user can enter SC story ID in either format: '[sc-123]' or 'sc-123':
-  const prTitleStoryIds = prTitle.match(/(?<=sc\-)\d+/g);
+  const prTitleStoryIds = prTitle.match(/(?<=sc-)\d+/g);
   // Github user can include more than one SC story ID
   let storyIds = '';
 
