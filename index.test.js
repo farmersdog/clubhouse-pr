@@ -14,7 +14,7 @@ github.context = {
   payload: {
     pull_request: {
       title: 'Feature Name',
-      head: { ref: 'username/ch1/feature-name' },
+      head: { ref: 'username/sc-1/feature-name' },
     },
   },
 };
@@ -50,11 +50,11 @@ describe('Update Pull Request', () => {
       const prTitle = action.getTitle(
         ['5678'],
         { name: 'A clubhouse story name', story_type: 'feature' },
-        'ch',
-        'ch',
+        'sc-',
+        'sc-',
         true
       );
-      expect(prTitle).toEqual('(feature) A clubhouse story name [ch5678]');
+      expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
     });
 
     test('should not use story name from clubhouse as title', async () => {
@@ -62,11 +62,11 @@ describe('Update Pull Request', () => {
         ['5678'],
         { name: 'A clubhouse story name', story_type: 'feature' },
         'A PR title that should not be replaced',
-        'ch',
+        'sc-',
         true
       );
       expect(prTitle).toEqual(
-        '(feature) A PR title that should not be replaced [ch5678]'
+        '(feature) A PR title that should not be replaced [sc-5678]'
       );
     });
 
@@ -75,11 +75,11 @@ describe('Update Pull Request', () => {
         ['5678'],
         { name: 'A clubhouse story name', story_type: 'feature' },
         'A PR title that should not be replaced',
-        'ch',
+        'sc-',
         false
       );
       expect(prTitle).toEqual(
-        'A PR title that should not be replaced [ch5678]'
+        'A PR title that should not be replaced [sc-5678]'
       );
     });
   });
@@ -90,28 +90,28 @@ describe('Update Pull Request', () => {
       expect(action.getStoryIds(pullRequest)).toEqual(['1']);
     });
 
-    test('should return [ch#] storyIds from PR title', () => {
+    test('should return [sc-#] storyIds from PR title', () => {
       const pullRequest = {
-        title: '[ch2]',
+        title: '[sc-2]',
         head: { ref: 'i-named-this-in-a-diff-format' },
       };
 
       expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
-    test('should return ch# storyIds from PR title', () => {
+    test('should return sc-# storyIds from PR title', () => {
       const pullRequest = {
-        title: 'ch2',
+        title: 'sc-2',
         head: { ref: 'i-named-this-in-a-diff-format' },
       };
 
       expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
-    test('should exit if no ch id in PR title or branchName', () => {
+    test('should exit if no sc- id in PR title or branchName', () => {
       const pullRequest = {
-        title: 'I have nothing related to ch ids in my title',
-        head: { ref: 'i-dont-have-a-ch-id-in-here' },
+        title: 'I have nothing related to sc- ids in my title',
+        head: { ref: 'i-dont-have-a-sc-id-in-here' },
       };
 
       action.getStoryIds(pullRequest);
@@ -119,7 +119,7 @@ describe('Update Pull Request', () => {
     });
   });
 
-  describe('getClubhouseStory', () => {
+  describe('getShortcutStory', () => {
     let chMock;
     let client;
     let stories;
@@ -149,14 +149,14 @@ describe('Update Pull Request', () => {
 
     test('should return a story object', async () => {
       const firstStoryId = storyIds[0];
-      await expect(action.getClubhouseStory(client, storyIds)).resolves.toEqual(
+      await expect(action.getShortcutStory(client, storyIds)).resolves.toEqual(
         stories[firstStoryId]
       );
     });
 
     test('should error out without any IDs', async () => {
       storyIds = [];
-      await expect(action.getClubhouseStory(client, storyIds)).resolves.toEqual(
+      await expect(action.getShortcutStory(client, storyIds)).resolves.toEqual(
         'Error fetching story!'
       );
     });
