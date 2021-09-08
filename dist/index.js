@@ -10,7 +10,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "formatMatches": () => /* binding */ formatMatches,
 /* harmony export */   "getStoryIds": () => /* binding */ getStoryIds,
-/* harmony export */   "getClubhouseStory": () => /* binding */ getClubhouseStory,
+/* harmony export */   "getShortcutStory": () => /* binding */ getShortcutStory,
 /* harmony export */   "getTitle": () => /* binding */ getTitle,
 /* harmony export */   "fetchStoryAndUpdatePr": () => /* binding */ fetchStoryAndUpdatePr,
 /* harmony export */   "run": () => /* binding */ run
@@ -65,7 +65,7 @@ function getStoryIds(pullRequest) {
   );
 }
 
-async function getClubhouseStory(client, storyIds) {
+async function getShortcutStory(client, storyIds) {
   // Even if there's more than one storyId, fetch only first story name:
   try {
     return client
@@ -121,7 +121,7 @@ async function fetchStoryAndUpdatePr(params) {
   } = params;
   const client = Clubhouse.create(chToken);
   const storyIds = getStoryIds(pullRequest);
-  const story = await getClubhouseStory(client, storyIds);
+  const story = await getShortcutStory(client, storyIds);
   const newTitle = getTitle(
     storyIds,
     story,

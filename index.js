@@ -16,12 +16,12 @@ function formatMatches(matches) {
 
 function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
-  // Only when a Github user formats their branchName as: text/ch123/something
-  const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
+  // Only when a Github user formats their branchName as: text/sc-123/something
+  const branchStoryIds = branchName.match(/\/(sc\-)(\d+)\//g);
   const prTitle = pullRequest.title;
-  // Github user can enter CH story ID in either format: '[ch123]' or 'ch123':
-  const prTitleStoryIds = prTitle.match(/(?<=ch)\d+/g);
-  // Github user can include more than one CH story ID
+  // Github user can enter SC story ID in either format: '[sc-123]' or 'sc-123':
+  const prTitleStoryIds = prTitle.match(/(?<=sc\-)\d+/g);
+  // Github user can include more than one SC story ID
   let storyIds = '';
 
   core.info(`Branch Name: ${branchName}`);
@@ -30,7 +30,7 @@ function getStoryIds(pullRequest) {
   if (branchStoryIds) {
     storyIds = formatMatches(branchStoryIds);
 
-    core.info(`Found Clubhouse ID(s) in Branch Name: ${storyIds.join(', ')}`);
+    core.info(`Found Shortcut ID(s) in Branch Name: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
@@ -38,17 +38,17 @@ function getStoryIds(pullRequest) {
   if (prTitleStoryIds) {
     storyIds = prTitleStoryIds;
 
-    core.info(`Found Clubhouse ID(s) in PR Title: ${storyIds.join(', ')}`);
+    core.info(`Found Shortcut ID(s) in PR Title: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
 
   return core.setFailed(
-    'Action failed to find a Clubhouse ID in both the branch name and PR title.'
+    'Action failed to find a Shortcut ID in both the branch name and PR title.'
   );
 }
 
-async function getClubhouseStory(client, storyIds) {
+async function getShortcutStory(client, storyIds) {
   // Even if there's more than one storyId, fetch only first story name:
   try {
     return client
@@ -104,7 +104,7 @@ async function fetchStoryAndUpdatePr(params) {
   } = params;
   const client = Clubhouse.create(chToken);
   const storyIds = getStoryIds(pullRequest);
-  const story = await getClubhouseStory(client, storyIds);
+  const story = await getShortcutStory(client, storyIds);
   const newTitle = getTitle(
     storyIds,
     story,
@@ -166,7 +166,7 @@ if (process.env.GITHUB_ACTIONS) {
 export {
   formatMatches,
   getStoryIds,
-  getClubhouseStory,
+  getShortcutStory,
   getTitle,
   fetchStoryAndUpdatePr,
   run,

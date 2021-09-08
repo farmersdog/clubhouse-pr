@@ -119,7 +119,7 @@ describe('Update Pull Request', () => {
     });
   });
 
-  describe('getClubhouseStory', () => {
+  describe('getShortcutStory', () => {
     let chMock;
     let client;
     let stories;
@@ -149,14 +149,14 @@ describe('Update Pull Request', () => {
 
     test('should return a story object', async () => {
       const firstStoryId = storyIds[0];
-      await expect(action.getClubhouseStory(client, storyIds)).resolves.toEqual(
+      await expect(action.getShortcutStory(client, storyIds)).resolves.toEqual(
         stories[firstStoryId]
       );
     });
 
     test('should error out without any IDs', async () => {
       storyIds = [];
-      await expect(action.getClubhouseStory(client, storyIds)).resolves.toEqual(
+      await expect(action.getShortcutStory(client, storyIds)).resolves.toEqual(
         'Error fetching story!'
       );
     });
