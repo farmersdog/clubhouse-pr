@@ -105,7 +105,16 @@ function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
   const formattedStoryIds = storyIds.map((id) => `[sc-${id}]`).join(' ');
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
-  const newTitle = `${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+  let newTitle = basePrTitle;
+
+  if (basePrTitle.indexOf(typePrefix) < 0) {
+    newTitle = `${typePrefix}${newTitle}`;
+  }
+
+  if (basePrTitle.indexOf(formattedStoryIds) < 0) {
+    newTitle = `${newTitle} ${formattedStoryIds}`;
+  }
+
   return newTitle;
 }
 
