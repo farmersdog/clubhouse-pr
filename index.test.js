@@ -19,9 +19,7 @@ github.context = {
   },
 };
 
-jest.spyOn(core, 'getInput').mockImplementation((name) => {
-  return inputs[name];
-});
+jest.spyOn(core, 'getInput').mockImplementation((name) => inputs[name]);
 
 jest.spyOn(core, 'info').mockImplementation(jest.fn());
 jest.spyOn(core, 'setFailed').mockImplementation(jest.fn());
