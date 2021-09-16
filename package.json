@@ -12,11 +12,6 @@
     "test": "jest",
     "prepare": "husky install"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/farmersdog/clubhouse-pr.git"
