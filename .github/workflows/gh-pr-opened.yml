@@ -15,5 +15,5 @@ jobs:
       - name: Update PR
         uses: './action'
         with:
-          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          ghToken: ${{ github.token }}
           chToken: ${{ secrets.CLUBHOUSE_TOKEN }}
