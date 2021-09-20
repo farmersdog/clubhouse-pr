@@ -16,12 +16,12 @@ function formatMatches(matches) {
 
 function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
-  // Only when a Github user formats their branchName as: text/ch123/something
-  const branchStoryIds = branchName.match(/\/(ch)(\d+)\//g);
+  // Only when a Github user formats their branchName as: text/sc-123/something
+  const branchStoryIds = branchName.match(/\/(sc-)(\d+)\//g);
   const prTitle = pullRequest.title;
-  // Github user can enter CH story ID in either format: '[ch123]' or 'ch123':
-  const prTitleStoryIds = prTitle.match(/(?<=ch)\d+/g);
-  // Github user can include more than one CH story ID
+  // Github user can enter SC story ID in either format: '[sc-123]' or 'sc-123':
+  const prTitleStoryIds = prTitle.match(/(?<=sc-)\d+/g);
+  // Github user can include more than one SC story ID
   let storyIds = '';
 
   core.info(`Branch Name: ${branchName}`);
@@ -30,7 +30,7 @@ function getStoryIds(pullRequest) {
   if (branchStoryIds) {
     storyIds = formatMatches(branchStoryIds);
 
-    core.info(`Found Clubhouse ID(s) in Branch Name: ${storyIds.join(', ')}`);
+    core.info(`Found Shortcut ID(s) in Branch Name: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
@@ -38,17 +38,17 @@ function getStoryIds(pullRequest) {
   if (prTitleStoryIds) {
     storyIds = prTitleStoryIds;
 
-    core.info(`Found Clubhouse ID(s) in PR Title: ${storyIds.join(', ')}`);
+    core.info(`Found Shortcut ID(s) in PR Title: ${storyIds.join(', ')}`);
 
     return storyIds;
   }
 
   return core.setFailed(
-    'Action failed to find a Clubhouse ID in both the branch name and PR title.'
+    'Action failed to find a Shortcut ID in both the branch name and PR title.'
   );
 }
 
-async function getClubhouseStory(client, storyIds) {
+async function getShortcutStory(client, storyIds) {
   // Even if there's more than one storyId, fetch only first story name:
   try {
     return client
@@ -83,7 +83,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
 
   try {
     core.info(`Updating Title: ${title}`);
-    return await octokit.pulls.update({
+    return await octokit.rest.pulls.update({
       repo,
       owner: login,
       pull_number: pullRequest.number,
@@ -95,12 +95,28 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   }
 }
 
-function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType, epic) {
-  const formattedStoryIds = storyIds.map((id) => `[ch${id}]`).join(' ');
+function getTitle(
+  storyIds,
+  story,
+  prTitle,
+  useStoryNameTrigger,
+  addStoryType,
+  epic
+) {
+  const formattedStoryIds = storyIds.map((id) => `[sc-${id}]`).join(' ');
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
   const epicPrefix = epic ? `${epic.name} - ` : '';
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
-  const newTitle = `${epicPrefix}${typePrefix}${basePrTitle} ${formattedStoryIds}`;
+  let newTitle = basePrTitle;
+
+  if (basePrTitle.indexOf(typePrefix) < 0) {
+    newTitle = `${epicPrefix}${typePrefix}${newTitle}`;
+  }
+
+  if (basePrTitle.indexOf(formattedStoryIds) < 0) {
+    newTitle = `${epicPrefix}${newTitle} ${formattedStoryIds}`;
+  }
+
   return newTitle;
 }
 
@@ -117,8 +133,11 @@ async function fetchStoryAndUpdatePr(params) {
   } = params;
   const client = Clubhouse.create(chToken);
   const storyIds = getStoryIds(pullRequest);
-  const story = await getClubhouseStory(client, storyIds);
-  const epic = addStoryEpic && story.epic_id ? await getClubhouseEpic(client, story.epic_id) : null;
+  const story = await getShortcutStory(client, storyIds);
+  const epic =
+    addStoryEpic && story.epic_id
+      ? await getClubhouseEpic(client, story.epic_id)
+      : null;
   const newTitle = getTitle(
     storyIds,
     story,
@@ -159,7 +178,9 @@ async function run() {
     const params = {
       ghToken,
       chToken,
-      addStoryEpic: core.getInput('addStoryEpic') === 'true',
+      addStoryEpic: core.getInput('addStoryEpic')
+        ? core.getBooleanInput('addStoryEpic')
+        : false,
       addStoryType: core.getInput('addStoryType'),
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
@@ -182,7 +203,7 @@ if (process.env.GITHUB_ACTIONS) {
 export {
   formatMatches,
   getStoryIds,
-  getClubhouseStory,
+  getShortcutStory,
   getTitle,
   fetchStoryAndUpdatePr,
   run,
