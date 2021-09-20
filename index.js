@@ -109,12 +109,16 @@ function getTitle(
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
   let newTitle = basePrTitle;
 
+  if (basePrTitle.indexOf(epicPrefix) < 0) {
+    newTitle = `${epicPrefix}${newTitle}`;
+  }
+
   if (basePrTitle.indexOf(typePrefix) < 0) {
-    newTitle = `${epicPrefix}${typePrefix}${newTitle}`;
+    newTitle = `${typePrefix}${newTitle}`;
   }
 
   if (basePrTitle.indexOf(formattedStoryIds) < 0) {
-    newTitle = `${epicPrefix}${newTitle} ${formattedStoryIds}`;
+    newTitle = `${newTitle} ${formattedStoryIds}`;
   }
 
   return newTitle;
