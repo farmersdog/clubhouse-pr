@@ -105,9 +105,21 @@ describe('Update Pull Request', () => {
   });
 
   describe('getStoryIds', () => {
-    test('should return storyIds from branchName', () => {
+    test(
+      'should return storyIds from branchName when in the format ' +
+        '[owner_username]/[story_id]/[story_name] ' +
+        'or [story_type]/[story_id]/[story_name]',
+      () => {
+        const { pull_request: pullRequest } = github.context.payload;
+        expect(action.getStoryIds(pullRequest)).toEqual(['1']);
+      }
+    );
+
+    test('should return storyIds from branchName when in the format [story_id]/[story_name]', () => {
       const { pull_request: pullRequest } = github.context.payload;
-      expect(action.getStoryIds(pullRequest)).toEqual(['1']);
+      pullRequest.head.ref = 'sc-2/feature-name';
+
+      expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
     test('should return [sc-#] storyIds from PR title', () => {
