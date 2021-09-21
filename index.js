@@ -68,7 +68,15 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   } = repository;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
-  const body = `Story Details: ${url} \n \n${originalBody}`;
+  let body = `Story Details: ${url}`;
+
+  if (originalBody) {
+    if (originalBody.includes(body)) {
+      body = originalBody;
+    } else {
+      body += `\n\n${originalBody}`;
+    }
+  }
 
   try {
     core.info(`Updating Title: ${title}`);
@@ -149,7 +157,13 @@ async function run() {
     core.setSecret('ghToken');
     core.setSecret('chToken');
 
-    const { pull_request: pullRequest, repository } = github.context.payload;
+    const octokit = github.getOctokit(ghToken);
+    const { number: prNumber, repository } = github.context.payload;
+    const { data: pullRequest } = await octokit.pulls.get({
+      repo: repository.name,
+      owner: repository.owner.login,
+      pull_number: prNumber,
+    });
     const params = {
       ghToken,
       chToken,
