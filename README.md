@@ -23,6 +23,12 @@ This action is configured to extract the clubhouse story id form either the bran
 
 **Default** `true`
 
+### `addStoryEpic`
+
+**Optional** Boolean to enable or disable prepending the story's Epic to the PR title
+
+**Default** `false`
+
 ### `useStoryNameTrigger`
 
 **Optional** When a PR is opened with this string as the title, fetch the story name from clubhouse
