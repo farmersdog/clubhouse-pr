@@ -185,7 +185,9 @@ async function run() {
       addStoryEpic: core.getInput('addStoryEpic')
         ? core.getBooleanInput('addStoryEpic')
         : false,
-      addStoryType: core.getInput('addStoryType'),
+      addStoryType: core.getInput('addStoryType')
+        ? core.getBooleanInput('addStoryType')
+        : true,
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,

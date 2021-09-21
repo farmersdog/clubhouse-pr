@@ -14858,9 +14858,11 @@ async function run() {
       ghToken,
       chToken,
       addStoryEpic: core.getInput('addStoryEpic')
-        ? core.getBooleanInput('addStoryEpic')
-        : false,
-      addStoryType: core.getInput('addStoryType'),
+      ? core.getBooleanInput('addStoryEpic')
+      : false,
+      addStoryType: core.getInput('addStoryType')
+        ? core.getBooleanInput('addStoryType')
+        : true,
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,

@@ -49,6 +49,14 @@ describe('Update Pull Request', () => {
       await action.run();
       expect(core.getBooleanInput).toHaveBeenCalledWith('addStoryEpic');
     });
+
+    test('should parse addStoryType to boolean', async () => {
+      inputs.ghToken = '123';
+      inputs.chToken = '123';
+      inputs.addStoryType = 'true';
+      await action.run();
+      expect(core.getBooleanInput).toHaveBeenCalledWith('addStoryType');
+    });
   });
 
   describe('Creating the PR Title', () => {
