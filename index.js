@@ -60,17 +60,6 @@ async function getShortcutStory(client, storyIds) {
   }
 }
 
-async function getClubhouseEpic(client, epicId) {
-  try {
-    return client
-      .getEpic(epicId)
-      .then((res) => res)
-      .catch((err) => err.response);
-  } catch (error) {
-    return core.setFailed(error);
-  }
-}
-
 async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const octokit = github.getOctokit(ghToken);
   const {
@@ -103,23 +92,11 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   }
 }
 
-function getTitle(
-  storyIds,
-  story,
-  prTitle,
-  useStoryNameTrigger,
-  addStoryType,
-  epic
-) {
+function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
   const formattedStoryIds = storyIds.map((id) => `[sc-${id}]`).join(' ');
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
-  const epicPrefix = epic ? `${epic.name} - ` : '';
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
   let newTitle = basePrTitle;
-
-  if (basePrTitle.indexOf(epicPrefix) < 0) {
-    newTitle = `${epicPrefix}${newTitle}`;
-  }
 
   if (basePrTitle.indexOf(typePrefix) < 0) {
     newTitle = `${typePrefix}${newTitle}`;
@@ -136,7 +113,6 @@ async function fetchStoryAndUpdatePr(params) {
   const {
     ghToken,
     chToken,
-    addStoryEpic,
     addStoryType,
     useStoryNameTrigger,
     pullRequest,
@@ -146,17 +122,12 @@ async function fetchStoryAndUpdatePr(params) {
   const client = Clubhouse.create(chToken);
   const storyIds = getStoryIds(pullRequest);
   const story = await getShortcutStory(client, storyIds);
-  const epic =
-    addStoryEpic && story.epic_id
-      ? await getClubhouseEpic(client, story.epic_id)
-      : null;
   const newTitle = getTitle(
     storyIds,
     story,
     pullRequest.title,
     useStoryNameTrigger,
-    addStoryType,
-    epic
+    addStoryType
   );
 
   if (!dryRun) {
@@ -196,9 +167,6 @@ async function run() {
     const params = {
       ghToken,
       chToken,
-      addStoryEpic: core.getInput('addStoryEpic')
-        ? core.getBooleanInput('addStoryEpic')
-        : false,
       addStoryType: core.getInput('addStoryType')
         ? core.getBooleanInput('addStoryType')
         : true,
