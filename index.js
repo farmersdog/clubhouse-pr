@@ -153,9 +153,7 @@ async function run() {
     const params = {
       ghToken,
       chToken,
-      addStoryType: core.getInput('addStoryType')
-        ? core.getBooleanInput('addStoryType')
-        : true,
+      addStoryType: core.getInput('addStoryType'),
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,
