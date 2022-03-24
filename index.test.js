@@ -41,22 +41,6 @@ describe('Update Pull Request', () => {
       await action.run();
       expect(core.setFailed).toHaveBeenCalledTimes(1);
     });
-
-    test('should parse addStoryEpic to boolean', async () => {
-      inputs.ghToken = '123';
-      inputs.chToken = '123';
-      inputs.addStoryEpic = 'true';
-      await action.run();
-      expect(core.getBooleanInput).toHaveBeenCalledWith('addStoryEpic');
-    });
-
-    test('should parse addStoryType to boolean', async () => {
-      inputs.ghToken = '123';
-      inputs.chToken = '123';
-      inputs.addStoryType = 'true';
-      await action.run();
-      expect(core.getBooleanInput).toHaveBeenCalledWith('addStoryType');
-    });
   });
 
   describe('Creating the PR Title', () => {
@@ -66,8 +50,7 @@ describe('Update Pull Request', () => {
         { name: 'A clubhouse story name', story_type: 'feature' },
         'sc-',
         'sc-',
-        true,
-        null
+        true
       );
       expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
     });
@@ -78,8 +61,7 @@ describe('Update Pull Request', () => {
         { name: 'A clubhouse story name', story_type: 'feature' },
         'A PR title that should not be replaced',
         'sc-',
-        true,
-        null
+        true
       );
       expect(prTitle).toEqual(
         '(feature) A PR title that should not be replaced [sc-5678]'
@@ -92,42 +74,10 @@ describe('Update Pull Request', () => {
         { name: 'A clubhouse story name', story_type: 'feature' },
         'A PR title that should not be replaced',
         'sc-',
-        false,
-        null
+        false
       );
       expect(prTitle).toEqual(
         'A PR title that should not be replaced [sc-5678]'
-      );
-    });
-
-    test('should add story epic from clubhouse to the title', async () => {
-      const prTitle = action.getTitle(
-        ['5678'],
-        { name: 'A clubhouse story name', story_type: 'feature' },
-        'sc-',
-        'sc-',
-        true,
-        { name: 'Epic clubhouse' }
-      );
-      expect(prTitle).toEqual(
-        '(feature) Epic clubhouse - A clubhouse story name [sc-5678]'
-      );
-    });
-
-    test('should not duplicate story epic if already present in the title', async () => {
-      const prTitle = action.getTitle(
-        ['5678'],
-        {
-          name: 'Epic clubhouse - A clubhouse story name',
-          story_type: 'feature',
-        },
-        'sc-',
-        'sc-',
-        true,
-        { name: 'Epic clubhouse' }
-      );
-      expect(prTitle).toEqual(
-        '(feature) Epic clubhouse - A clubhouse story name [sc-5678]'
       );
     });
 
@@ -137,8 +87,7 @@ describe('Update Pull Request', () => {
         { name: 'A clubhouse story name [sc-5678]', story_type: 'feature' },
         'sc-',
         'sc-',
-        true,
-        null
+        true
       );
       expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
     });
@@ -149,8 +98,7 @@ describe('Update Pull Request', () => {
         { name: '(feature) A clubhouse story name', story_type: 'feature' },
         'sc-',
         'sc-',
-        true,
-        null
+        true
       );
       expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
     });

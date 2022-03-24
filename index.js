@@ -60,17 +60,6 @@ async function getShortcutStory(client, storyIds) {
   }
 }
 
-async function getClubhouseEpic(client, epicId) {
-  try {
-    return client
-      .getEpic(epicId)
-      .then((res) => res)
-      .catch((err) => err.response);
-  } catch (error) {
-    return core.setFailed(error);
-  }
-}
-
 async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   const octokit = github.getOctokit(ghToken);
   const {
@@ -79,15 +68,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   } = repository;
   const { title, url } = metadata;
   const originalBody = pullRequest.body;
-  let body = `Story Details: ${url}`;
-
-  if (originalBody) {
-    if (originalBody.includes(body)) {
-      body = originalBody;
-    } else {
-      body += `\n\n${originalBody}`;
-    }
-  }
+  const body = `Story Details: ${url} \n \n${originalBody}`;
 
   try {
     core.info(`Updating Title: ${title}`);
@@ -103,23 +84,11 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
   }
 }
 
-function getTitle(
-  storyIds,
-  story,
-  prTitle,
-  useStoryNameTrigger,
-  addStoryType,
-  epic
-) {
+function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
   const formattedStoryIds = storyIds.map((id) => `[sc-${id}]`).join(' ');
   const basePrTitle = prTitle === useStoryNameTrigger ? story.name : prTitle;
-  const epicPrefix = epic ? `${epic.name} - ` : '';
   const typePrefix = addStoryType ? `(${story.story_type}) ` : '';
   let newTitle = basePrTitle;
-
-  if (basePrTitle.indexOf(epicPrefix) < 0) {
-    newTitle = `${epicPrefix}${newTitle}`;
-  }
 
   if (basePrTitle.indexOf(typePrefix) < 0) {
     newTitle = `${typePrefix}${newTitle}`;
@@ -136,7 +105,6 @@ async function fetchStoryAndUpdatePr(params) {
   const {
     ghToken,
     chToken,
-    addStoryEpic,
     addStoryType,
     useStoryNameTrigger,
     pullRequest,
@@ -146,17 +114,12 @@ async function fetchStoryAndUpdatePr(params) {
   const client = Clubhouse.create(chToken);
   const storyIds = getStoryIds(pullRequest);
   const story = await getShortcutStory(client, storyIds);
-  const epic =
-    addStoryEpic && story.epic_id
-      ? await getClubhouseEpic(client, story.epic_id)
-      : null;
   const newTitle = getTitle(
     storyIds,
     story,
     pullRequest.title,
     useStoryNameTrigger,
-    addStoryType,
-    epic
+    addStoryType
   );
 
   if (!dryRun) {
@@ -186,22 +149,11 @@ async function run() {
     core.setSecret('ghToken');
     core.setSecret('chToken');
 
-    const octokit = github.getOctokit(ghToken);
-    const { number: prNumber, repository } = github.context.payload;
-    const { data: pullRequest } = await octokit.pulls.get({
-      repo: repository.name,
-      owner: repository.owner.login,
-      pull_number: prNumber,
-    });
+    const { pull_request: pullRequest, repository } = github.context.payload;
     const params = {
       ghToken,
       chToken,
-      addStoryEpic: core.getInput('addStoryEpic')
-        ? core.getBooleanInput('addStoryEpic')
-        : false,
-      addStoryType: core.getInput('addStoryType')
-        ? core.getBooleanInput('addStoryType')
-        : true,
+      addStoryType: core.getInput('addStoryType'),
       useStoryNameTrigger: core.getInput('useStoryNameTrigger'),
       pullRequest,
       repository,

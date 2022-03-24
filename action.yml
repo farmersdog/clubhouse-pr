@@ -11,10 +11,6 @@ inputs:
     description: 'Boolean to enable or disable prepending the story type to the PR title'
     required: false
     default: 'true'
-  addStoryEpic:
-    description: "Boolean to enable or disable prepending the story's Epic to the PR title"
-    required: false
-    default: 'false'
   useStoryNameTrigger:
     description: 'When a PR is opened with this string as the title, fetch the story name from clubhouse'
     required: false
