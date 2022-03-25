@@ -14838,7 +14838,7 @@ async function run() {
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {
-    return core.setFailed(error.message);
+    return core.warn(error.message);
   }
 }
 

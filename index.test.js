@@ -44,21 +44,21 @@ describe('Update Pull Request', () => {
   });
 
   describe('Creating the PR Title', () => {
-    test('should use story name from clubhouse as title', async () => {
+    test('should use story name from shortcut as title', async () => {
       const prTitle = action.getTitle(
         ['5678'],
-        { name: 'A clubhouse story name', story_type: 'feature' },
+        { name: 'A shortcut story name', story_type: 'feature' },
         'sc-',
         'sc-',
         true
       );
-      expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
+      expect(prTitle).toEqual('(feature) A shortcut story name [sc-5678]');
     });
 
-    test('should not use story name from clubhouse as title', async () => {
+    test('should not use story name from shortcut as title', async () => {
       const prTitle = action.getTitle(
         ['5678'],
-        { name: 'A clubhouse story name', story_type: 'feature' },
+        { name: 'A shortcut story name', story_type: 'feature' },
         'A PR title that should not be replaced',
         'sc-',
         true
@@ -71,7 +71,7 @@ describe('Update Pull Request', () => {
     test('should not add story type when option is false', async () => {
       const prTitle = action.getTitle(
         ['5678'],
-        { name: 'A clubhouse story name', story_type: 'feature' },
+        { name: 'A shortcut story name', story_type: 'feature' },
         'A PR title that should not be replaced',
         'sc-',
         false
@@ -84,23 +84,23 @@ describe('Update Pull Request', () => {
     test('should not duplicate story number if already present', async () => {
       const prTitle = action.getTitle(
         ['5678'],
-        { name: 'A clubhouse story name [sc-5678]', story_type: 'feature' },
+        { name: 'A shortcut story name [sc-5678]', story_type: 'feature' },
         'sc-',
         'sc-',
         true
       );
-      expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
+      expect(prTitle).toEqual('(feature) A shortcut story name [sc-5678]');
     });
 
     test('should not duplicate story type if already present', async () => {
       const prTitle = action.getTitle(
         ['5678'],
-        { name: '(feature) A clubhouse story name', story_type: 'feature' },
+        { name: '(feature) A shortcut story name', story_type: 'feature' },
         'sc-',
         'sc-',
         true
       );
-      expect(prTitle).toEqual('(feature) A clubhouse story name [sc-5678]');
+      expect(prTitle).toEqual('(feature) A shortcut story name [sc-5678]');
     });
   });
 
