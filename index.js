@@ -80,7 +80,7 @@ async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
       body,
     });
   } catch (error) {
-    return core.setFailed(error);
+    return core.warning(error.message);
   }
 }
 
