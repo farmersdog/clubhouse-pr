@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const Shortcut = require('@useshortcut/client');
+const { ShortcutClient } = require('@useshortcut/client');
 
 function formatMatches(matches) {
   const values = [];
@@ -111,7 +111,7 @@ async function fetchStoryAndUpdatePr(params) {
     repository,
     dryRun,
   } = params;
-  const client = new Shortcut(chToken);
+  const client = new ShortcutClient(chToken);
   const storyIds = getStoryIds(pullRequest);
   const story = await getShortcutStory(client, storyIds);
   const newTitle = getTitle(
