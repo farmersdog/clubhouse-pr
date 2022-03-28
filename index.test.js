@@ -151,7 +151,7 @@ describe('Update Pull Request', () => {
         { name: '(feat) Story 1', id: '1' },
         { name: '(feat) Story 2', id: '2' },
       ];
-      chMock = jest.createMockFromModule('clubhouse-lib').default;
+      chMock = jest.createMockFromModule('@useshortcut/client').default;
       chMock = {
         create: jest.fn().mockImplementation(() => ({
           getStory: (id) =>
