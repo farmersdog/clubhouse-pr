@@ -43,7 +43,7 @@ function getStoryIds(pullRequest) {
     return storyIds;
   }
 
-  return core.setFailed(
+  return core.warning(
     'Action failed to find a Shortcut ID in both the branch name and PR title.'
   );
 }
@@ -56,7 +56,7 @@ async function getShortcutStory(client, storyIds) {
       .then((res) => res)
       .catch((err) => err.response);
   } catch (error) {
-    return core.setFailed(error);
+    return core.warning(error.message);
   }
 }
 
