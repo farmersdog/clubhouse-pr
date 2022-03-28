@@ -15853,7 +15853,7 @@ async function run() {
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {
-    return core.warn(error.message);
+    return core.warning(error.message);
   }
 }
 
