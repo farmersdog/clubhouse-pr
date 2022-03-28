@@ -15690,7 +15690,7 @@ __nccwpck_require__.r(__webpack_exports__);
 /* harmony export */ });
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
-const Shortcut = __nccwpck_require__(5914);
+const { ShortcutClient } = __nccwpck_require__(5914);
 
 function formatMatches(matches) {
   const values = [];
@@ -15801,7 +15801,7 @@ async function fetchStoryAndUpdatePr(params) {
     repository,
     dryRun,
   } = params;
-  const client = new Shortcut(chToken);
+  const client = new ShortcutClient(chToken);
   const storyIds = getStoryIds(pullRequest);
   const story = await getShortcutStory(client, storyIds);
   const newTitle = getTitle(
