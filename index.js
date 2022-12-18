@@ -98,7 +98,7 @@ function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
  * @param {string} params.ghToken GitHub API token
  * @param {string} params.chToken Shortcut API token
  * @param {boolean} params.addStoryType should the story type by included in the PR?
- * @param {boolean} params.useStoryNameTrigger should the PR title be overwritten with the story name?
+ * @param {string} params.useStoryNameTrigger the PR title to replace (i.e. if "ch" replaces the PR title when the title is "ch")
  * @param {object} params.pullRequest the pull request defails from a GitHub Actions context
  * @param {object} params.repository the repository details from a GitHub Actions context
  * @param {boolean} params.dryRun should we actually update the PR?
