@@ -14,6 +14,11 @@ function formatMatches(matches) {
   return values;
 }
 
+/**
+ * Given a GitHub pull request, extract any referenced Shortcut story IDs
+ * @param {object} pullRequest a pull request from a GitHub Actions context
+ * @returns an array of Shortcut story Ids found in the branch name or PR title (empty if no IDs found)
+ */
 function getStoryIds(pullRequest) {
   const branchName = pullRequest.head.ref;
   // Only when a Github user formats their branchName as: text/sc-123/something
@@ -43,21 +48,7 @@ function getStoryIds(pullRequest) {
     return storyIds;
   }
 
-  return core.setFailed(
-    'Action failed to find a Shortcut ID in both the branch name and PR title.'
-  );
-}
-
-async function getShortcutStory(client, storyIds) {
-  // Even if there's more than one storyId, fetch only first story name:
-  try {
-    return client
-      .getStory(storyIds[0])
-      .then((res) => res)
-      .catch((err) => err.response);
-  } catch (error) {
-    return core.setFailed(error);
-  }
+  return [];
 }
 
 async function updatePullRequest(ghToken, pullRequest, repository, metadata) {
@@ -101,6 +92,18 @@ function getTitle(storyIds, story, prTitle, useStoryNameTrigger, addStoryType) {
   return newTitle;
 }
 
+/**
+ * Update a PR to include Shortcut story details if a Shortcut story ID is referenced in the branch or PR
+ * @param {object} params configuration options
+ * @param {string} params.ghToken GitHub API token
+ * @param {string} params.chToken Shortcut API token
+ * @param {boolean} params.addStoryType should the story type by included in the PR?
+ * @param {boolean} params.useStoryNameTrigger should the PR title be overwritten with the story name?
+ * @param {object} params.pullRequest the pull request defails from a GitHub Actions context
+ * @param {object} params.repository the repository details from a GitHub Actions context
+ * @param {boolean} params.dryRun should we actually update the PR?
+ * @returns a new PR title if a story is found, otherwise the original PR title
+ */
 async function fetchStoryAndUpdatePr(params) {
   const {
     ghToken,
@@ -113,7 +116,15 @@ async function fetchStoryAndUpdatePr(params) {
   } = params;
   const client = new ShortcutClient(chToken);
   const storyIds = getStoryIds(pullRequest);
-  const story = await getShortcutStory(client, storyIds);
+
+  // If no stories found, use the existing title
+  if (storyIds.length === 0) {
+    return pullRequest.title;
+  }
+
+  // Even if there's more than one storyId, fetch only the first story's name
+  const story = await client.getStory(storyIds[0]).then((res) => res.data);
+
   const newTitle = getTitle(
     storyIds,
     story,
@@ -163,7 +174,7 @@ async function run() {
 
     return core.setOutput('prTitle', prTitle);
   } catch (error) {
-    return core.warning(error.message);
+    return core.setFailed(error);
   }
 }
 
@@ -172,11 +183,4 @@ if (process.env.GITHUB_ACTIONS) {
   run();
 }
 
-export {
-  formatMatches,
-  getStoryIds,
-  getShortcutStory,
-  getTitle,
-  fetchStoryAndUpdatePr,
-  run,
-};
+export { formatMatches, getStoryIds, getTitle, fetchStoryAndUpdatePr, run };
