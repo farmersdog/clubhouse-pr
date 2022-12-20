@@ -4,6 +4,23 @@ import * as action from '.';
 
 let inputs = {};
 
+const stories = {
+  1: { name: '(feat) Story 1', id: '1', story_type: 'bug' },
+  2: { name: '(feat) Story 2', id: '2', story_type: 'chore' },
+};
+
+jest.mock('@useshortcut/client', () => {
+  class ShortcutClient {
+    /* eslint-disable class-methods-use-this */
+    async getStory(id) {
+      return new Promise((resolve) => {
+        process.nextTick(() => resolve({ data: stories[id] }));
+      }).catch(() => 'Error fetching story!');
+    }
+  }
+  return { ShortcutClient };
+});
+
 jest.mock('@actions/core');
 
 jest.mock('@actions/github', () => ({
@@ -128,56 +145,52 @@ describe('Update Pull Request', () => {
       expect(action.getStoryIds(pullRequest)).toEqual(['2']);
     });
 
-    test('should exit if no sc- id in PR title or branchName', () => {
+    test('should return an empty array if no sc- id in PR title or branchName', () => {
       const pullRequest = {
         title: 'I have nothing related to sc- ids in my title',
         head: { ref: 'i-dont-have-a-sc-id-in-here' },
       };
 
-      action.getStoryIds(pullRequest);
-      expect(core.setFailed).toHaveBeenCalledTimes(1);
+      const result = action.getStoryIds(pullRequest);
+      expect(result).toEqual([]);
     });
   });
 
-  describe('getShortcutStory', () => {
-    let chMock;
-    let client;
-    let stories;
-    let storyIds;
+  describe('fetchStoryAndUpdatePr', () => {
+    let params;
 
     beforeAll(() => {
-      storyIds = ['1', '2'];
-      stories = [
-        { name: '(feat) Story 1', id: '1' },
-        { name: '(feat) Story 2', id: '2' },
-      ];
-      chMock = jest.createMockFromModule('@useshortcut/client').default;
-      chMock = {
-        create: jest.fn().mockImplementation(() => ({
-          getStory: (id) =>
-            new Promise((resolve, reject) => {
-              process.nextTick(() =>
-                stories[id]
-                  ? resolve(stories[id])
-                  : reject(new Error('Error fetching story!'))
-              );
-            }).catch(() => 'Error fetching story!'),
-        })),
+      params = {
+        ghToken: 'fake',
+        chToken: 'fake',
+        addStoryType: true,
+        useStoryNameTrigger: true,
+        pullRequest: {
+          head: {
+            ref: 'username/sc-2/feature-name',
+          },
+          title: 'Original Title',
+        },
+        repository: {
+          name: 'api',
+          owner: {
+            login: 'username',
+          },
+        },
+        dryRun: false,
       };
-      client = chMock.create('000');
     });
 
-    test('should return a story object', async () => {
-      const firstStoryId = storyIds[0];
-      await expect(action.getShortcutStory(client, storyIds)).resolves.toEqual(
-        stories[firstStoryId]
+    test('should return the story title and update the PR if a story is found', async () => {
+      await expect(action.fetchStoryAndUpdatePr(params)).resolves.toEqual(
+        '(chore) Original Title [sc-2]'
       );
     });
 
-    test('should error out without any IDs', async () => {
-      storyIds = [];
-      await expect(action.getShortcutStory(client, storyIds)).resolves.toEqual(
-        'Error fetching story!'
+    test('should return the original title and not update the PR if a story is not found', async () => {
+      params.pullRequest.head.ref = 'username/feature-name';
+      await expect(action.fetchStoryAndUpdatePr(params)).resolves.toEqual(
+        'Original Title'
       );
     });
   });
